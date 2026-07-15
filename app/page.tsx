@@ -3,17 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Bus Schedule Data in English
+// Updated Bus Schedule Data with all classes and timings
 const BUS_SCHEDULE = [
-  { id: "1", from: "Karachi", to: "Islamabad", time: "06:00 PM", fare: 7500, serviceType: "Sleeper Class" },
-  { id: "2", from: "Karachi", to: "Haripur", time: "07:00 PM", fare: 8000, serviceType: "Business Class" },
-  { id: "3", from: "Karachi", to: "Abbottabad", time: "08:00 PM", fare: 8200, serviceType: "Standard Executive" },
-  { id: "4", from: "Karachi", to: "Mansehra", time: "09:00 PM", fare: 8500, serviceType: "Sleeper Class" },
+  // گاڑیاں (یہ تمام گاڑیاں ہر منزل کے لیے شو ہوں گی)
+  { id: "1", from: "Karachi", to: "Islamabad, Haripur, Abbottabad, Mansehra", time: "08:00 AM", fare: 5500, serviceType: "AC Executive Class" },
+  { id: "2", from: "Karachi", to: "Islamabad, Haripur, Abbottabad, Mansehra", time: "12:00 PM", fare: 5800, serviceType: "AC Executive Class" },
+  { id: "3", from: "Karachi", to: "Islamabad, Haripur, Abbottabad, Mansehra", time: "02:00 PM", fare: 6000, serviceType: "AC Executive Class" },
+  { id: "4", from: "Karachi", to: "Islamabad, Haripur, Abbottabad, Mansehra", time: "04:00 PM", fare: 6200, serviceType: "AC Executive Class" },
+  
+  { id: "5", from: "Karachi", to: "Islamabad, Haripur, Abbottabad, Mansehra", time: "12:00 PM", fare: 7000, serviceType: "Business Class" },
+  { id: "6", from: "Karachi", to: "Islamabad, Haripur, Abbottabad, Mansehra", time: "04:00 PM", fare: 7500, serviceType: "Business Class" },
+  
+  { id: "7", from: "Karachi", to: "Islamabad, Haripur, Abbottabad, Mansehra", time: "02:00 PM", fare: 8500, serviceType: "Sleeper Class" },
+  { id: "8", from: "Karachi", to: "Islamabad, Haripur, Abbottabad, Mansehra", time: "06:00 PM", fare: 9000, serviceType: "Sleeper Class" },
 ];
 
 export default function SearchPage() {
   const router = useRouter();
-  // 'from' is fixed to Karachi
   const [from] = useState("Karachi"); 
   const [to, setTo] = useState("");
   const [date, setDate] = useState("");
@@ -27,8 +33,9 @@ export default function SearchPage() {
       return;
     }
 
+    // یہاں ہم چیک کر رہے ہیں کہ کیا منتخب کردہ شہر ہماری اس لسٹ (to) میں موجود ہے
     const filtered = BUS_SCHEDULE.filter(
-      (bus) => bus.from === from && bus.to === to
+      (bus) => bus.from === from && bus.to.includes(to)
     );
 
     setSearchResults(filtered);
