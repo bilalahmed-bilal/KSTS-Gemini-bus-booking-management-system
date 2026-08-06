@@ -2,12 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* پورے پروجیکٹ میں جہاں بھی اردو لکھی ہو، اس پر صرف کیلیبری فونٹ لاگو ہو */
-body, html, input, button, select, textarea {
+@import "tw-animate-css";
+
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --border: #e2e8f0;
+}
+
+
+* {
+  border-color: var(--border);
+}
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
   font-family: 'Calibri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* اردو ٹیکسٹ کے لیے خاص کلاس تاکہ اگر آپ کسی مخصوص جگہ ہائٹ وغیرہ بڑھانا چاہیں */
+
+/* Urdu Text */
+
 .urdu-text {
   font-family: 'Calibri', sans-serif !important;
   direction: rtl;

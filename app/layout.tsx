@@ -1,7 +1,12 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import "./globals.css";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
 
 export default function RootLayout({
   children,
@@ -22,7 +27,7 @@ export default function RootLayout({
   const closeModal = () => setActiveModal(null);
 
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body 
         className="bg-slate-50 text-slate-800 min-h-screen flex flex-col relative"
         suppressHydrationWarning

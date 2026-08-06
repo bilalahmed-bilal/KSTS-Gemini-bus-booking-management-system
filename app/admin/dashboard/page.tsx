@@ -1,170 +1,156 @@
+import DashboardSidebar from "@/components/dashboard-sidebar";
+import DashboardHeader from "@/components/dashboard-header";
+import StatCard from "@/components/stat-card";
+
+import {
+  Building2,
+  Bus,
+  Ticket,
+  Users,
+} from "lucide-react";
+
+
 export default function DashboardPage() {
+
   return (
-    <div style={styles.container}>
+
+    <div className="
+      flex
+      min-h-screen
+      bg-slate-100
+    ">
+
 
       {/* Sidebar */}
-      <aside style={styles.sidebar}>
-        <h2 style={styles.logo}>
-          KSTS
-        </h2>
 
-        <p style={styles.brand}>
-          Smart Travel Services
-        </p>
-
-        <nav>
-          <p>🏠 Dashboard</p>
-          <p>🏢 Companies</p>
-          <p>🏪 Offices</p>
-          <p>🚌 Buses</p>
-          <p>🛣 Routes</p>
-          <p>🎫 Bookings</p>
-          <p>👥 Users</p>
-          <p>⚙ Settings</p>
-        </nav>
-      </aside>
+      <DashboardSidebar />
 
 
-      {/* Main Area */}
-      <main style={styles.main}>
 
-        <header style={styles.header}>
-          <h1>
-            KSTS Super Admin Dashboard
-          </h1>
+      {/* Main */}
 
-          <div>
-            Bilal Ahmed
-            <br />
-            <small>
-              SUPER ADMIN
-            </small>
-          </div>
-        </header>
+      <main className="
+        flex-1
+        p-6
+      ">
 
 
-        {/* Welcome */}
-        <section style={styles.card}>
-          <h2>
-            Welcome Bilal Ahmed 👋
-          </h2>
+        <DashboardHeader />
 
-          <p>
-            Karachi Smart Travel Services Management System
-          </p>
-        </section>
 
 
         {/* Stats */}
-        <section style={styles.grid}>
 
-          <div style={styles.stat}>
-            <h3>0</h3>
-            <p>Total Companies</p>
-          </div>
+        <div className="
+          mt-6
+          grid
+          gap-6
+          sm:grid-cols-2
+          lg:grid-cols-4
+        ">
 
-          <div style={styles.stat}>
-            <h3>0</h3>
-            <p>Total Offices</p>
-          </div>
 
-          <div style={styles.stat}>
-            <h3>0</h3>
-            <p>Total Buses</p>
-          </div>
+          <StatCard
+            title="Total Companies"
+            value="0"
+            icon={Building2}
+          />
 
-          <div style={styles.stat}>
-            <h3>0</h3>
-            <p>Total Bookings</p>
-          </div>
 
-        </section>
+          <StatCard
+            title="Total Buses"
+            value="0"
+            icon={Bus}
+          />
+
+
+          <StatCard
+            title="Total Bookings"
+            value="0"
+            icon={Ticket}
+          />
+
+
+          <StatCard
+            title="Total Users"
+            value="1"
+            icon={Users}
+          />
+
+
+        </div>
+
 
 
         {/* Modules */}
-        <section style={styles.card}>
 
-          <h2>
+        <div className="
+          mt-6
+          rounded-xl
+          bg-white
+          p-6
+          shadow-sm
+        ">
+
+
+          <h2 className="
+            text-xl
+            font-bold
+          ">
             KSTS Modules
           </h2>
 
-          <ul>
-            <li>Bus Company Management</li>
-            <li>Office Management</li>
-            <li>Route Management</li>
-            <li>Schedule Management</li>
-            <li>Seat Booking System</li>
-            <li>Ticket Management</li>
-          </ul>
 
-        </section>
+          <div className="
+            mt-4
+            grid
+            gap-3
+            sm:grid-cols-2
+            lg:grid-cols-3
+          ">
+
+
+            <div className="rounded-lg bg-slate-100 p-4">
+              🏢 Company Management
+            </div>
+
+
+            <div className="rounded-lg bg-slate-100 p-4">
+              🏪 Office Management
+            </div>
+
+
+            <div className="rounded-lg bg-slate-100 p-4">
+              🚌 Bus Fleet Management
+            </div>
+
+
+            <div className="rounded-lg bg-slate-100 p-4">
+              🛣 Route Management
+            </div>
+
+
+            <div className="rounded-lg bg-slate-100 p-4">
+              🎫 Booking System
+            </div>
+
+
+            <div className="rounded-lg bg-slate-100 p-4">
+              ⚙ System Settings
+            </div>
+
+
+          </div>
+
+
+        </div>
 
 
       </main>
 
+
     </div>
+
   );
+
 }
-
-
-
-const styles = {
-
-  container:{
-    display:"flex",
-    minHeight:"100vh",
-    background:"#f5f7fb",
-    fontFamily:"Arial"
-  },
-
-  sidebar:{
-    width:"250px",
-    background:"#111827",
-    color:"white",
-    padding:"25px"
-  },
-
-  logo:{
-    fontSize:"38px",
-    margin:0
-  },
-
-  brand:{
-    color:"#9ca3af"
-  },
-
-  main:{
-    flex:1,
-    padding:"30px"
-  },
-
-  header:{
-    display:"flex",
-    justifyContent:"space-between",
-    background:"white",
-    padding:"20px",
-    borderRadius:"12px"
-  },
-
-  card:{
-    background:"white",
-    marginTop:"25px",
-    padding:"25px",
-    borderRadius:"12px"
-  },
-
-  grid:{
-    display:"grid",
-    gridTemplateColumns:"repeat(4,1fr)",
-    gap:"20px",
-    marginTop:"25px"
-  },
-
-  stat:{
-    background:"white",
-    padding:"25px",
-    borderRadius:"12px",
-    textAlign:"center"
-  }
-
-};
