@@ -25,9 +25,8 @@ export default function LoginPage() {
     const data = await response.json();
 
     if (response.ok) {
-      setMessage("Login Successful");
-      console.log(data);
-    } else {
+  window.location.href = "/admin/dashboard";
+} else {
       setMessage(data.message);
     }
   }
