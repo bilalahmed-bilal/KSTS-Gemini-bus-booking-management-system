@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import DashboardSidebar from "@/components/dashboard-sidebar";
 import DashboardHeader from "@/components/dashboard-header";
 import StatCard from "@/components/stat-card";
@@ -10,7 +14,93 @@ import {
 } from "lucide-react";
 
 
+interface User {
+
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+
+}
+
+
+
 export default function DashboardPage() {
+
+
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+
+
+  useEffect(() => {
+
+
+    async function getUser() {
+
+
+      try {
+
+
+        const response = await fetch("/api/auth/me");
+
+
+        const data = await response.json();
+
+
+        if (response.ok) {
+
+          setUser(data.user);
+
+        }
+
+
+      } catch (error) {
+
+        console.error(error);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+
+    }
+
+
+    getUser();
+
+
+  }, []);
+
+
+
+
+  if (loading) {
+
+
+    return (
+
+      <div className="
+        min-h-screen
+        flex
+        items-center
+        justify-center
+        text-xl
+        font-bold
+      ">
+
+        Loading KSTS Dashboard...
+
+      </div>
+
+    );
+
+  }
+
+
+
 
   return (
 
@@ -21,13 +111,10 @@ export default function DashboardPage() {
     ">
 
 
-      {/* Sidebar */}
 
       <DashboardSidebar />
 
 
-
-      {/* Main */}
 
       <main className="
         flex-1
@@ -39,7 +126,62 @@ export default function DashboardPage() {
 
 
 
+        {/* User Welcome Card */}
+
+        <div className="
+          mt-6
+          rounded-xl
+          bg-white
+          p-5
+          shadow-sm
+        ">
+
+
+          <h1 className="
+            text-2xl
+            font-bold
+          ">
+
+            Welcome Back, {user?.name}
+
+          </h1>
+
+
+          <p className="
+            mt-2
+            text-slate-600
+          ">
+
+            {user?.email}
+
+          </p>
+
+
+          <span className="
+            inline-block
+            mt-3
+            rounded-full
+            bg-blue-100
+            px-4
+            py-1
+            text-sm
+            font-semibold
+            text-blue-700
+          ">
+
+            {user?.role}
+
+          </span>
+
+
+        </div>
+
+
+
+
+
         {/* Stats */}
+
 
         <div className="
           mt-6
@@ -82,7 +224,10 @@ export default function DashboardPage() {
 
 
 
+
+
         {/* Modules */}
+
 
         <div className="
           mt-6
@@ -97,8 +242,11 @@ export default function DashboardPage() {
             text-xl
             font-bold
           ">
+
             KSTS Modules
+
           </h2>
+
 
 
           <div className="
@@ -146,11 +294,13 @@ export default function DashboardPage() {
         </div>
 
 
+
       </main>
 
 
     </div>
 
   );
+
 
 }
