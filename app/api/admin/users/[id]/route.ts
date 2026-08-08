@@ -1,7 +1,8 @@
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-
+import { Role } from "@prisma/client";
 
 // ===============================
 // GET SINGLE USER
@@ -25,6 +26,14 @@ export async function GET(
           select: {
             id: true,
             name: true,
+          },
+        },
+        office: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            city: true,
           },
         },
       },
@@ -58,7 +67,6 @@ export async function GET(
   }
 }
 
-
 // ===============================
 // UPDATE USER
 // ===============================
@@ -80,20 +88,19 @@ export async function PUT(
       password,
       role,
       companyId,
+      officeId,
       isActive,
     } = body;
-
 
     // -------------------------------
     // Check user exists
     // -------------------------------
 
-    const existingUser =
-      await prisma.user.findUnique({
-        where: {
-          id,
-        },
-      });
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
 
     if (!existingUser) {
       return NextResponse.json(
@@ -106,7 +113,6 @@ export async function PUT(
       );
     }
 
-
     // -------------------------------
     // Check duplicate email
     // -------------------------------
@@ -115,18 +121,16 @@ export async function PUT(
       email &&
       email !== existingUser.email
     ) {
-      const emailUser =
-        await prisma.user.findUnique({
-          where: {
-            email,
-          },
-        });
+      const emailUser = await prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
 
       if (emailUser) {
         return NextResponse.json(
           {
-            message:
-              "Email already exists",
+            message: "Email already exists",
           },
           {
             status: 400,
@@ -135,7 +139,6 @@ export async function PUT(
       }
     }
 
-
     // -------------------------------
     // Prepare update data
     // -------------------------------
@@ -143,12 +146,32 @@ export async function PUT(
     const updateData: {
       name?: string;
       email?: string;
-      role?: string;
-      companyId?: string | null;
+      role?: Role;
       isActive?: boolean;
       password?: string;
+      company?: {
+        connect: {
+          id: string;
+        };
+        disconnect?: never;
+      } | {
+        disconnect: true;
+        connect?: never;
+      };
+      office?: {
+        connect: {
+          id: string;
+        };
+        disconnect?: never;
+      } | {
+        disconnect: true;
+        connect?: never;
+      };
     } = {};
 
+    // -------------------------------
+    // Basic fields
+    // -------------------------------
 
     if (name !== undefined) {
       updateData.name = name;
@@ -159,19 +182,113 @@ export async function PUT(
     }
 
     if (role !== undefined) {
-      updateData.role = role;
-    }
+      if (
+        !Object.values(Role).includes(role)
+      ) {
+        return NextResponse.json(
+          {
+            message: "Invalid user role",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
 
-    if (companyId !== undefined) {
-      updateData.companyId =
-        companyId || null;
+      updateData.role = role as Role;
     }
 
     if (isActive !== undefined) {
-      updateData.isActive =
-        Boolean(isActive);
+      updateData.isActive = Boolean(isActive);
     }
 
+    // -------------------------------
+    // Company relation
+    // -------------------------------
+
+    if (companyId !== undefined) {
+      if (companyId) {
+        const company = await prisma.company.findUnique({
+          where: {
+            id: companyId,
+          },
+        });
+
+        if (!company) {
+          return NextResponse.json(
+            {
+              message: "Company not found",
+            },
+            {
+              status: 404,
+            }
+          );
+        }
+
+        updateData.company = {
+          connect: {
+            id: companyId,
+          },
+        };
+      } else {
+        updateData.company = {
+          disconnect: true,
+        };
+      }
+    }
+
+    // -------------------------------
+    // Office relation
+    // -------------------------------
+
+    if (officeId !== undefined) {
+      if (officeId) {
+        const office = await prisma.office.findUnique({
+          where: {
+            id: officeId,
+          },
+        });
+
+        if (!office) {
+          return NextResponse.json(
+            {
+              message: "Office not found",
+            },
+            {
+              status: 404,
+            }
+          );
+        }
+
+        // Make sure selected office belongs
+        // to selected company when companyId
+        // is supplied in this request.
+        if (
+          companyId &&
+          office.companyId !== companyId
+        ) {
+          return NextResponse.json(
+            {
+              message:
+                "Selected office does not belong to the selected company",
+            },
+            {
+              status: 400,
+            }
+          );
+        }
+
+        updateData.office = {
+          connect: {
+            id: officeId,
+          },
+        };
+      } else {
+        updateData.office = {
+          disconnect: true,
+        };
+      }
+    }
 
     // -------------------------------
     // Update password only if entered
@@ -181,39 +298,40 @@ export async function PUT(
       password &&
       password.trim() !== ""
     ) {
-      const hashedPassword =
-        await bcrypt.hash(
-          password,
-          10
-        );
+      const hashedPassword = await bcrypt.hash(
+        password,
+        10
+      );
 
-      updateData.password =
-        hashedPassword;
+      updateData.password = hashedPassword;
     }
-
 
     // -------------------------------
     // Update user
     // -------------------------------
 
-    const user =
-      await prisma.user.update({
-        where: {
-          id,
-        },
-
-        data: updateData,
-
-        include: {
-          company: {
-            select: {
-              id: true,
-              name: true,
-            },
+    const user = await prisma.user.update({
+      where: {
+        id,
+      },
+      data: updateData,
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
           },
         },
-      });
-
+        office: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            city: true,
+          },
+        },
+      },
+    });
 
     // -------------------------------
     // Never return password
@@ -224,11 +342,8 @@ export async function PUT(
       ...safeUser
     } = user;
 
-
     return NextResponse.json({
-      message:
-        "User updated successfully",
-
+      message: "User updated successfully",
       user: safeUser,
     });
   } catch (error) {
@@ -239,8 +354,7 @@ export async function PUT(
 
     return NextResponse.json(
       {
-        message:
-          "Failed to update user",
+        message: "Failed to update user",
       },
       {
         status: 500,
@@ -248,7 +362,6 @@ export async function PUT(
     );
   }
 }
-
 
 // ===============================
 // DELETE USER
@@ -263,17 +376,15 @@ export async function DELETE(
   try {
     const { id } = await context.params;
 
-
     // -------------------------------
     // Check user exists
     // -------------------------------
 
-    const existingUser =
-      await prisma.user.findUnique({
-        where: {
-          id,
-        },
-      });
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
 
     if (!existingUser) {
       return NextResponse.json(
@@ -286,7 +397,6 @@ export async function DELETE(
       );
     }
 
-
     // -------------------------------
     // Delete user
     // -------------------------------
@@ -297,10 +407,8 @@ export async function DELETE(
       },
     });
 
-
     return NextResponse.json({
-      message:
-        "User deleted successfully",
+      message: "User deleted successfully",
     });
   } catch (error) {
     console.error(
@@ -310,8 +418,7 @@ export async function DELETE(
 
     return NextResponse.json(
       {
-        message:
-          "Failed to delete user",
+        message: "Failed to delete user",
       },
       {
         status: 500,
