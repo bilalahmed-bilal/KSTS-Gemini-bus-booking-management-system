@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
@@ -50,8 +49,13 @@ export async function GET(
       );
     }
 
+    const {
+      password: _password,
+      ...safeUser
+    } = user;
+
     return NextResponse.json({
-      user,
+      user: safeUser,
     });
   } catch (error) {
     console.error("GET USER ERROR:", error);
@@ -118,7 +122,7 @@ export async function PUT(
     // -------------------------------
 
     if (
-      email &&
+      email !== undefined &&
       email !== existingUser.email
     ) {
       const emailUser = await prisma.user.findUnique({
@@ -149,24 +153,24 @@ export async function PUT(
       role?: Role;
       isActive?: boolean;
       password?: string;
-      company?: {
-        connect: {
-          id: string;
-        };
-        disconnect?: never;
-      } | {
-        disconnect: true;
-        connect?: never;
-      };
-      office?: {
-        connect: {
-          id: string;
-        };
-        disconnect?: never;
-      } | {
-        disconnect: true;
-        connect?: never;
-      };
+      company?:
+        | {
+            connect: {
+              id: string;
+            };
+          }
+        | {
+            disconnect: true;
+          };
+      office?:
+        | {
+            connect: {
+              id: string;
+            };
+          }
+        | {
+            disconnect: true;
+          };
     } = {};
 
     // -------------------------------
@@ -182,9 +186,7 @@ export async function PUT(
     }
 
     if (role !== undefined) {
-      if (
-        !Object.values(Role).includes(role)
-      ) {
+      if (!Object.values(Role).includes(role)) {
         return NextResponse.json(
           {
             message: "Invalid user role",
@@ -260,9 +262,8 @@ export async function PUT(
           );
         }
 
-        // Make sure selected office belongs
-        // to selected company when companyId
-        // is supplied in this request.
+        // If companyId is supplied,
+        // office must belong to that company.
         if (
           companyId &&
           office.companyId !== companyId
@@ -296,6 +297,7 @@ export async function PUT(
 
     if (
       password &&
+      typeof password === "string" &&
       password.trim() !== ""
     ) {
       const hashedPassword = await bcrypt.hash(
