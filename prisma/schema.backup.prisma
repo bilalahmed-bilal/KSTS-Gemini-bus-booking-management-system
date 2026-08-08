@@ -1,0 +1,79 @@
+generator client {
+provider = "prisma-client-js"
+}
+
+datasource db {
+provider = "postgresql"
+}
+
+enum Role {
+SUPER_ADMIN
+COMPANY_ADMIN
+OFFICE_MANAGER
+OFFICE_STAFF
+}
+
+enum CompanyStatus {
+ACTIVE
+INACTIVE
+}
+
+enum OfficeStatus {
+ACTIVE
+INACTIVE
+}
+
+model Company {
+id        String        @id @default(cuid())
+name      String
+logo      String?
+phone     String?
+email     String?
+address   String?
+status    CompanyStatus @default(ACTIVE)
+
+users     User[]
+offices   Office[]
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+}
+
+model Office {
+id        String       @id @default(cuid())
+name      String
+code      String
+city      String
+address   String?
+phone     String?
+status    OfficeStatus @default(ACTIVE)
+
+companyId String
+company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+users     User[]
+
+createdAt DateTime     @default(now())
+updatedAt DateTime     @updatedAt
+
+@@unique([companyId, code])
+}
+
+model User {
+id          String   @id @default(cuid())
+name        String
+email       String   @unique
+password    String
+role        Role     @default(OFFICE_STAFF)
+isActive    Boolean  @default(true)
+lastLoginAt DateTime?
+
+companyId   String?
+company     Company? @relation(fields: [companyId], references: [id])
+
+officeId    String?
+office      Office?  @relation(fields: [officeId], references: [id])
+
+createdAt   DateTime @default(now())
+updatedAt   DateTime @updatedAt
+}

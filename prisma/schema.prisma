@@ -1,79 +1,171 @@
 generator client {
-provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-provider = "postgresql"
+  provider = "postgresql"
 }
 
 enum Role {
-SUPER_ADMIN
-COMPANY_ADMIN
-OFFICE_MANAGER
-OFFICE_STAFF
+  SUPER_ADMIN
+  COMPANY_ADMIN
+  OFFICE_MANAGER
+  OFFICE_STAFF
 }
 
 enum CompanyStatus {
-ACTIVE
-INACTIVE
+  ACTIVE
+  INACTIVE
 }
 
 enum OfficeStatus {
-ACTIVE
-INACTIVE
+  ACTIVE
+  INACTIVE
+}
+
+enum BusStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BusType {
+  STANDARD
+  EXECUTIVE
+  SLEEPER
+  FAMILY
+  LUXURY
+}
+
+enum SeatClass {
+  EXECUTIVE
+  BUSINESS
+  SLEEPER
+}
+
+enum SeatLayoutType {
+  TWO_BY_TWO
+  ONE_BY_TWO
+}
+
+enum SeatType {
+  SEAT
+  UPPER_BED
+  LOWER_BED
 }
 
 model Company {
-id        String        @id @default(cuid())
-name      String
-logo      String?
-phone     String?
-email     String?
-address   String?
-status    CompanyStatus @default(ACTIVE)
+  id      String        @id @default(cuid())
+  name    String
+  logo    String?
+  phone   String?
+  email   String?
+  address String?
+  status  CompanyStatus @default(ACTIVE)
 
-users     User[]
-offices   Office[]
+  users   User[]
+  offices Office[]
+  buses   Bus[]
 
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Office {
-id        String       @id @default(cuid())
-name      String
-code      String
-city      String
-address   String?
-phone     String?
-status    OfficeStatus @default(ACTIVE)
+  id      String       @id @default(cuid())
+  name    String
+  code    String
+  city    String
+  address String?
+  phone   String?
+  status  OfficeStatus @default(ACTIVE)
 
-companyId String
-company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-users     User[]
+  users User[]
 
-createdAt DateTime     @default(now())
-updatedAt DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-@@unique([companyId, code])
+  @@unique([companyId, code])
 }
 
 model User {
-id          String   @id @default(cuid())
-name        String
-email       String   @unique
-password    String
-role        Role     @default(OFFICE_STAFF)
-isActive    Boolean  @default(true)
-lastLoginAt DateTime?
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  password    String
+  role        Role      @default(OFFICE_STAFF)
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
 
-companyId   String?
-company     Company? @relation(fields: [companyId], references: [id])
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
 
-officeId    String?
-office      Office?  @relation(fields: [officeId], references: [id])
+  officeId String?
+  office   Office? @relation(fields: [officeId], references: [id])
 
-createdAt   DateTime @default(now())
-updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Bus {
+  id                 String    @id @default(cuid())
+  name               String?
+  registrationNumber String?
+  busType            BusType   @default(STANDARD)
+  totalSeats         Int
+  status             BusStatus @default(ACTIVE)
+
+  // Bus booking class
+  seatClass SeatClass @default(EXECUTIVE)
+
+  // Physical seat layout
+  seatLayoutType SeatLayoutType @default(TWO_BY_TWO)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  seats BusSeat[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BusSeat {
+  id         String @id @default(cuid())
+  seatNumber String
+
+  // Physical position
+  row    Int
+  column Int
+
+  // Seat / bed type
+  seatType SeatType @default(SEAT)
+
+  // Sleeper grouping
+  //
+  // Group 1:
+  // Upper: 1 | 2 3
+  // Lower: 4 | 5 6
+  //
+  // Group 2:
+  // Upper: 7 | 8 9
+  // Lower: 10 | 11 12
+  sleeperGroup Int?
+
+  // Seat class
+  seatClass SeatClass
+
+  busId String
+  bus   Bus    @relation(fields: [busId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([busId, seatNumber])
+  @@index([busId, row])
+  @@index([busId, sleeperGroup])
+  @@index([busId, seatClass])
+  @@index([busId, seatType])
 }
