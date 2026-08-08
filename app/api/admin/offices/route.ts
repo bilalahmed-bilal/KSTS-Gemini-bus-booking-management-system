@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// GET ALL OFFICES
 export async function GET() {
   try {
     const offices = await prisma.office.findMany({
@@ -9,11 +10,6 @@ export async function GET() {
           select: {
             id: true,
             name: true,
-          },
-        },
-        _count: {
-          select: {
-            users: true,
           },
         },
       },
@@ -30,7 +26,7 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        message: "Failed to load offices",
+        message: "Failed to fetch offices",
       },
       {
         status: 500,
@@ -39,6 +35,7 @@ export async function GET() {
   }
 }
 
+// CREATE OFFICE
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -50,6 +47,7 @@ export async function POST(request: Request) {
       address,
       phone,
       companyId,
+      status,
     } = body;
 
     if (!name || !code || !city || !companyId) {
@@ -64,6 +62,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check company
     const company = await prisma.company.findUnique({
       where: {
         id: companyId,
@@ -81,14 +80,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingOffice = await prisma.office.findUnique({
-      where: {
-        companyId_code: {
-          companyId,
-          code,
+    // Check duplicate office code
+    const existingOffice =
+      await prisma.office.findUnique({
+        where: {
+          companyId_code: {
+            companyId,
+            code,
+          },
         },
-      },
-    });
+      });
 
     if (existingOffice) {
       return NextResponse.json(
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
             "This office code already exists for this company",
         },
         {
-          status: 409,
+          status: 400,
         }
       );
     }
@@ -110,6 +111,7 @@ export async function POST(request: Request) {
         address: address || null,
         phone: phone || null,
         companyId,
+        status: status || "ACTIVE",
       },
       include: {
         company: {

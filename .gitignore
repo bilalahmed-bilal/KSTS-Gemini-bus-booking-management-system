@@ -38,3 +38,4 @@ Thumbs.db
 *.zip
 
 skills-lock.json
+tsconfig.tsbuildinfo
