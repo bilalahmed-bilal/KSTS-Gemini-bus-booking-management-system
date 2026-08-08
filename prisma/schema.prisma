@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
 }
 
+
 enum Role {
   SUPER_ADMIN
   COMPANY_ADMIN
@@ -14,15 +15,64 @@ enum Role {
 }
 
 
+enum CompanyStatus {
+  ACTIVE
+  INACTIVE
+}
+
+
+model Company {
+
+  id          String   @id @default(cuid())
+
+  name        String
+
+  logo        String?
+
+  phone       String?
+
+  email       String?
+
+  address     String?
+
+  status      CompanyStatus @default(ACTIVE)
+
+
+  users       User[]
+
+
+  createdAt   DateTime @default(now())
+
+  updatedAt   DateTime @updatedAt
+
+}
+
+
+
 model User {
+
   id           String   @id @default(cuid())
+
   name         String
+
   email        String   @unique
+
   password     String
+
   role         Role     @default(OFFICE_STAFF)
+
   isActive     Boolean  @default(true)
+
   lastLoginAt  DateTime?
 
+
+  companyId    String?
+
+  company      Company? @relation(fields: [companyId], references: [id])
+
+
   createdAt    DateTime @default(now())
+
   updatedAt    DateTime @updatedAt
+
 }

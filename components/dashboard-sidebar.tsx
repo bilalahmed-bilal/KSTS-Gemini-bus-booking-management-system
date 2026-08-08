@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 import {
   LayoutDashboard,
   Building2,
@@ -10,6 +13,7 @@ import {
   Users,
   Settings,
   LogOut,
+  Lock,
 } from "lucide-react";
 
 
@@ -22,95 +26,149 @@ interface User {
 
 
 const menuItems = [
+
   {
     title: "Dashboard",
     icon: LayoutDashboard,
+    href: "/admin/dashboard",
+    active: true,
   },
+
   {
     title: "Companies",
     icon: Building2,
+    href: "/admin/companies",
+    active: true,
   },
-  {
-    title: "Buses",
-    icon: Bus,
-  },
-  {
-    title: "Routes",
-    icon: Map,
-  },
-  {
-    title: "Bookings",
-    icon: Ticket,
-  },
+
+
   {
     title: "Users",
     icon: Users,
+    href: "/admin/users",
+    active: true,
   },
+
+
+  {
+    title: "Buses",
+    icon: Bus,
+    href: "#",
+    active: false,
+  },
+
+
+  {
+    title: "Routes",
+    icon: Map,
+    href: "#",
+    active: false,
+  },
+
+
+  {
+    title: "Bookings",
+    icon: Ticket,
+    href: "#",
+    active: false,
+  },
+
+
   {
     title: "Settings",
     icon: Settings,
+    href: "#",
+    active: false,
   },
+
 ];
+
 
 
 
 export default function DashboardSidebar() {
 
 
+  const pathname = usePathname();
+
+
   const [user, setUser] = useState<User | null>(null);
 
 
 
-  useEffect(() => {
 
-    async function loadUser() {
 
-      try {
+  useEffect(()=>{
 
-        const response = await fetch("/api/auth/me");
+
+    async function loadUser(){
+
+
+      try{
+
+
+        const response = await fetch(
+          "/api/auth/me"
+        );
+
 
         const data = await response.json();
 
 
-        if (response.ok) {
+
+        if(response.ok){
 
           setUser(data.user);
 
         }
 
 
-      } catch (error) {
+      }
+
+      catch(error){
 
         console.error(error);
 
       }
 
+
     }
+
 
 
     loadUser();
 
 
-  }, []);
+
+  },[]);
 
 
 
 
 
-  async function handleLogout() {
 
 
-    try {
 
-      await fetch("/api/auth/logout", {
-        method: "POST",
-      });
+  async function handleLogout(){
 
 
-      window.location.href = "/login";
+    try{
 
 
-    } catch (error) {
+      await fetch(
+        "/api/auth/logout",
+        {
+          method:"POST",
+        }
+      );
+
+
+      window.location.href="/login";
+
+
+    }
+
+    catch(error){
 
       console.error(error);
 
@@ -123,7 +181,9 @@ export default function DashboardSidebar() {
 
 
 
+
   return (
+
 
     <aside
       className="
@@ -141,10 +201,10 @@ export default function DashboardSidebar() {
 
 
 
+
       {/* Logo */}
 
       <div className="mb-6">
-
 
         <h1
           className="
@@ -168,7 +228,8 @@ export default function DashboardSidebar() {
 
 
 
-      {/* User Profile */}
+
+      {/* User */}
 
       <div
         className="
@@ -180,24 +241,17 @@ export default function DashboardSidebar() {
       >
 
 
-        <p
-          className="
-            font-bold
-            truncate
-          "
-        >
+        <p className="font-bold truncate">
+
           {user?.name || "Loading..."}
+
         </p>
 
 
-        <p
-          className="
-            text-xs
-            text-slate-400
-            truncate
-          "
-        >
+        <p className="text-xs text-slate-400 truncate">
+
           {user?.email || ""}
+
         </p>
 
 
@@ -216,7 +270,9 @@ export default function DashboardSidebar() {
               font-semibold
             "
           >
+
             {user.role}
+
           </span>
 
         )}
@@ -230,60 +286,121 @@ export default function DashboardSidebar() {
 
 
 
-      {/* Menu */}
+
+
+      {/* Navigation */}
+
 
       <nav
         className="
           flex-1
           space-y-2
-          overflow-y-auto
-          pr-1
         "
       >
 
 
-        {menuItems.map((item) => {
+        {
+          menuItems.map((item)=>{
 
 
-          const Icon = item.icon;
+            const Icon = item.icon;
 
 
-          return (
-
-            <button
-
-              key={item.title}
-
-              className="
-                w-full
-                flex
-                items-center
-                gap-3
-                rounded-lg
-                px-4
-                py-3
-                text-left
-                text-slate-200
-                hover:bg-slate-800
-                transition
-              "
-
-            >
-
-              <Icon size={20}/>
-
-              <span>
-                {item.title}
-              </span>
+            const isActive =
+              pathname === item.href;
 
 
-            </button>
+
+            if(!item.active){
 
 
-          );
+              return (
+
+                <div
+                  key={item.title}
+                  className="
+                    flex
+                    items-center
+                    gap-3
+                    rounded-lg
+                    px-4
+                    py-3
+                    text-slate-500
+                    cursor-not-allowed
+                  "
+                >
+
+                  <Icon size={20}/>
 
 
-        })}
+                  <span>
+                    {item.title}
+                  </span>
+
+
+                  <Lock
+                    size={14}
+                    className="ml-auto"
+                  />
+
+
+                </div>
+
+              );
+
+
+            }
+
+
+
+
+
+
+            return (
+
+              <Link
+
+                key={item.title}
+
+                href={item.href}
+
+                className={`
+                  flex
+                  items-center
+                  gap-3
+                  rounded-lg
+                  px-4
+                  py-3
+                  transition
+
+                  ${
+                    isActive
+                    ? "bg-blue-600 text-white"
+                    : "text-slate-200 hover:bg-slate-800"
+                  }
+
+                `}
+
+              >
+
+                <Icon size={20}/>
+
+
+                <span>
+
+                  {item.title}
+
+                </span>
+
+
+              </Link>
+
+
+            );
+
+
+          })
+        }
 
 
       </nav>
@@ -294,42 +411,44 @@ export default function DashboardSidebar() {
 
 
 
+
+
       {/* Logout */}
 
-    {/* Logout */}
 
-<div className="mt-4">
+      <button
 
-  <button
-    onClick={handleLogout}
-    className="
-      w-full
-      flex
-      items-center
-      gap-3
-      rounded-lg
-      px-4
-      py-3
-      text-slate-200
-      hover:bg-red-600
-      transition
-    "
-  >
+        onClick={handleLogout}
 
-    <LogOut size={20}/>
+        className="
+          w-full
+          flex
+          items-center
+          gap-3
+          rounded-lg
+          px-4
+          py-3
+          text-slate-200
+          hover:bg-red-600
+          transition
+        "
 
-    <span>
-      Logout
-    </span>
+      >
 
-  </button>
+        <LogOut size={20}/>
 
-</div>
 
+        <span>
+          Logout
+        </span>
+
+
+      </button>
 
 
 
     </aside>
+
 
   );
 
